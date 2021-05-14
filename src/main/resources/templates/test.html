@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!-------------------------------------------------------------------------
+
+     @Author:           GuSaiKun
+     @CreateDate:       2021/5/12
+     @Description:      画点
+
+-------------------------------------------------------------------------->
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="../js/jquery-3.6.0.js"></script>
+</head>
+<body>
+<div id="box" style="width: 500px;height: 500px;margin: 0 auto;">
+    <canvas id="can" width="500px" height="500px" style="border: 1px solid black;">
+
+    </canvas>
+</div>
+<script type="text/javascript">
+    function GetRandomNum(Min, Max) {
+        var Range = Max - Min;
+        var Rand = Math.random();
+        return (Min + Math.round(Rand * Range));
+    }
+
+    function mouseCoords(ev) {
+        var e = event || window.event;
+        var x = e.offsetX || e.layerX;
+        var y = e.offsetY || e.layerY;
+        return {x, y};
+    }
+
+    var globl_w = 500;
+    var globl_h = 500;
+    makerect(0, 0, globl_w, globl_w);
+    var index = 0;
+    var pointList = new Array();
+    //鼠标点击生成圆
+    $("#can").click(function (e) {
+        var ev = ev || window.event;
+        var mousePos = mouseCoords(ev);
+        mousePosX = mousePos.x;
+        mousePosY = mousePos.y;
+        // pointList.push(a);
+        var point = {};
+        point['x'] = mousePosX;
+        point['y'] = mousePosY;
+        pointList.push(point);
+        index++;
+        for (var i = 0; i < index; i++) {
+            makearc(pointList[i], GetRandomNum(4, 4), 0, 180, 'red');
+        }
+        var data = JSON.stringify(pointList);
+        $.ajax({
+            url: "/test",
+            type: 'POST',//默认为get请求,这里设置为post请求
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(pointList),
+            beforeSend: function (data) {
+                console.log(typeof data);
+            },
+            success: function (data, status) {
+                console.log(data);
+                var finalPointList = eval(data);
+                drawLine(finalPointList);
+            },
+            error: function () {
+                console.log("ERROR");
+            }
+        });
+    });
+
+    function myAnimation() {
+        ctx.clearRect(0, 0, globl_w, globl_h);
+    }
+
+    //生成圆
+    function makearc(point, r, s, e, color) {
+        var can = document.getElementById('can');
+        var ctx = can.getContext("2d");
+        ctx.beginPath();
+        ctx.fillStyle = color
+        ctx.arc(point['x'], point['y'], r, s, e);
+        ctx.fill();
+    }
+
+    function makerect(x, y, w, h) {
+        var can = document.getElementById('can');
+        var ctx = can.getContext("2d");
+        ctx.strokeRect(x, y, w, h);
+    }
+
+    function drawLine(pointList) {
+        var can = document.getElementById('can');
+        var ctx = can.getContext("2d");
+        for (var i = 0, len = pointList.length; i < len; i++) {
+            //开始一个新的绘制路径
+            ctx.beginPath();
+            //设置线条颜色为蓝色
+            ctx.strokeStyle = "red";
+            //设置路径起点坐标
+            ctx.moveTo(pointList[0].x, pointList[0].y);
+            for (var j = 1; j < pointList.length; j++) {
+                ctx.lineTo(pointList[j].x, pointList[j].y);
+            }
+            //按照绘制路径顺序连接各个坐标点
+            ctx.stroke();
+        }
+    }
+
+</script>
+
+</body>
+</html>
