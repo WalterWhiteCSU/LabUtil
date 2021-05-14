@@ -27,7 +27,7 @@ public class controller {
         return mv;
     }
 
-    @PostMapping(value = "/test")
+    @PostMapping(value = "/test/1")
     public String test(@RequestBody String point){
         System.out.println(point);
         ObjectMapper mapper = new ObjectMapper();

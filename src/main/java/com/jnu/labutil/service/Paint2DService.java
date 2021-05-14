@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 public class Paint2DService {
 
+    /*   画直线   */
     public static ArrayList<Point2D> GetLine(ArrayList<Point2D> pointList) {
         ArrayList<Point2D> result = new ArrayList<>();
 
@@ -26,7 +27,13 @@ public class Paint2DService {
         return result;
     }
 
+    /*   画三次贝塞尔   */
     public static ArrayList<Point2D> GetBezierCurve(ArrayList<Point2D> pointList) {
         return Painting2DUtil.GetBezierCurvePointList(pointList);
+    }
+
+    /*   画三次样条曲线   */
+    public static ArrayList<Point2D> GetSplineCurve(ArrayList<Point2D> pointList){
+        return Painting2DUtil.GetSplineCurvePointList(pointList);
     }
 }

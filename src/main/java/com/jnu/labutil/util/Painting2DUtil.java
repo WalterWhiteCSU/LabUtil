@@ -79,4 +79,24 @@ public class Painting2DUtil {
 
         return result;
     }
+
+    /*   计算得到三弯矩方程   */
+    private static ArrayList<Double> GetMomentParameter(ArrayList<Point2D> pointList){
+        ArrayList<Double> momentList = new ArrayList<Double>();
+
+
+
+        return momentList;
+    }
+
+
+    /*   画三次样条曲线   */
+    public static ArrayList<Point2D> GetSplineCurvePointList(ArrayList<Point2D> pointList){
+        ArrayList<Point2D> result = new ArrayList<>();
+
+        //解三弯矩方程
+        ArrayList<Double> momentList = GetMomentParameter(pointList);
+
+        return result;
+    }
 }
