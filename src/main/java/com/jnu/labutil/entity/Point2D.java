@@ -15,4 +15,12 @@ import lombok.Data;
 public class Point2D {
     private double X;
     private double Y;
+
+    @Override
+    public String toString() {
+        return "Point2D{" +
+                "X=" + X +
+                ", Y=" + Y +
+                '}';
+    }
 }

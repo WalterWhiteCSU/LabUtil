@@ -29,7 +29,7 @@ public class Paint2DService {
 
     /*   画三次贝塞尔   */
     public static ArrayList<Point2D> GetBezierCurve(ArrayList<Point2D> pointList) {
-        return Painting2DUtil.GetBezierCurvePointList(pointList);
+        return Painting2DUtil.GetNURBSPointList(pointList);
     }
 
     /*   画三次样条曲线   */
