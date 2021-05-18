@@ -154,8 +154,12 @@
                      console.log(typeof data);
                 },
                 success: function (data, status) {
-;
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
                     var finalPointList = eval(data);
+                    for (var i = 0; i < pointList.length; i++) {
+                        makearc(pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
+                    };
                     drawLine(finalPointList);
                 },
                 error: function () {
