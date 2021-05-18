@@ -14,26 +14,53 @@
         #coor{
             width: 200px;
         }
+        #can {
+            background: #ffffff;
+            cursor: pointer;
+            margin-left: 10px;
+            margin-top: 10px;
+            -webkit-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+            -moz-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+        }
+        #btnPos{
+            left: 100px;
+            top: 1000px;
+        }
     </style>
     <script type="text/javascript" src="../js/jquery-3.6.0.js"></script>
 </head>
 <body>
-<div id="box" style="width: 500px;height: 500px;margin: 0 auto;">
-    <canvas id="can" width="500px" height="500px" style="border: 1px solid black;">
+<div id="box" style="width: 1500px;height: 1000px;margin: 0 auto;">
+    <canvas id="can" width="1000px" height="700px" >
 
     </canvas>
+    <div id="btnPos">
     <button id="btn1">removeOne</button>
     <button id="btn2">clear</button>
     <input id="coor" placeholder="请输入坐标x y以空格作为分隔符" type="text" name="coor" />
     <button id="submit">提交</button>
+        <input id="1" type="radio" checked name="editing" onclick="draw()" value="1"/>划线
+        <input id="2" type="radio" name="editing" onclick="edit()" value="2"/>拖拽
+
+    </div>
 </div>
 <script type="text/javascript">
+    // var drawDot = $("#edit");
+    // console.log("值: "+drawDot.val()+"类型： "+typeof drawDot);
+
+
     var can = document.getElementById('can');
     var ctx = can.getContext("2d");
     //定义是否拖拽标志，拖拽x偏移，拖拽y偏移
-    var dragging = false,draggingOffsetX, draggingOffsetY;
+    var dragging;
+    var can = $("#can");
     //是否可编辑
     var editing = false;
+    var flag = true;
+    var  GRID_STROKE_STYLE = 'lightblue', GRID_SPACING = 10;
+    //小圆点的半径
+    var rx = 3,ry=3;
     function GetRandomNum(Min, Max) {
         var Range = Max - Min;
         var Rand = Math.random();
@@ -52,49 +79,98 @@
     makerect(0, 0, globl_w, globl_w);
     var index = 0;
     var pointList = new Array();
-    //鼠标点击生成圆
-    $("#can").click(function (e) {
-        var ev = ev || window.event;
-        var mousePos = mouseCoords(ev);
-        mousePosX = mousePos.x;
-        mousePosY = mousePos.y;
-        // pointList.push(a);
-        var point = {};
-        point['x'] = mousePosX;
-        point['y'] = mousePosY;
-        // debugger;
-        pointList.push(point);
-        console.log("查看pointList的类型" + typeof pointList);
-        console.log("查看pointList中的数据" + pointList);
-        index++;
-        for (var i = 0; i < index; i++) {
-            makearc(pointList[i], GetRandomNum(4, 4), 0, 180, 'red');
+
+    function draw(){
+      var a= $("#1").checked = true;
+      editing = false;
+      console.log(editing+"  nima***")
+    };
+    function edit(){
+        var b = $("#2").checked = false;
+        editing = true;
+        console.log(editing+"  nida+++")
+    };
+    console.log("外面的editing"+editing);
+
+    //绘制网格
+    function drawGrid(color, stepX, stepY){
+        ctx.save()
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 0.5;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        for (var i = stepX + 0.5; i < ctx.canvas.width; i += stepX) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, ctx.canvas.height);
+            ctx.stroke();
         }
-        var data = JSON.stringify(pointList);
-        $.ajax({
-            url: "/test/1",
-            type: 'POST',//默认为get请求,这里设置为post请求
-            contentType: 'application/json;charset=UTF-8',
-            data: JSON.stringify(pointList),
-            beforeSend: function (data) {
-                console.log(typeof data);
-            },
-            success: function (data, status) {
-                console.log(data);
-                var finalPointList = eval(data);
-                drawLine(finalPointList);
-            },
-            error: function () {
-                console.log("ERROR");
+
+        for (var i = stepY + 0.5; i < ctx.canvas.height; i += stepY) {
+            ctx.beginPath();
+            ctx.moveTo(0, i);
+            ctx.lineTo(ctx.canvas.width, i);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    };
+    drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
+
+    function updateRubberband(loc, sides, startAngle) {
+        updateRubberbandRectangle(loc);
+        drawRubberbandShape(loc, sides, startAngle);
+    }
+
+    //鼠标点击生成圆
+        $("#can").click(function (e) {
+            if(editing == true)
+                return;
+            var ev = ev || window.event;
+            var mousePos = mouseCoords(ev);
+            mousePosX = mousePos.x;
+            mousePosY = mousePos.y;
+            console.log("原方法得到的坐标" + mousePosX + "   " + mousePosY);
+
+            var point = {};
+            point['x'] = mousePosX;
+            point['y'] = mousePosY;
+
+            pointList.push(point);
+
+            index++;
+            for (var i = 0; i < index; i++) {
+                makearc(pointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
+                // drawArc(pointList[i]);
             }
+            var data = JSON.stringify(pointList);
+            $.ajax({
+                url: "/test/1",
+                type: 'POST',//默认为get请求,这里设置为post请求
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(pointList),
+                beforeSend: function (data) {
+                     console.log(typeof data);
+                },
+                success: function (data, status) {
+;
+                    var finalPointList = eval(data);
+                    drawLine(finalPointList);
+                },
+                error: function () {
+                    console.log("ERROR");
+                }
+            });
         });
-    });
 
     //removeOne按钮
     $("#btn1").click(function (e){
         // debugger
         pointList.pop();
-        // var data = JSON.stringify(pointList);
+        pointList.pop();
+
+        index--;
         index--;
 
         $.ajax({
@@ -106,13 +182,13 @@
                 console.log(typeof data);
             },
             success: function (data, status) {
-                console.log(data);
+
                 var finalPointList = eval(data);
-                /*var can = document.getElementById('can');
-                var ctx = can.getContext("2d");*/
-                ctx.clearRect(0, 0, 500, 500);
+
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
                 for (var i = 0; i < pointList.length; i++) {
-                    makearc(pointList[i], GetRandomNum(4, 4), 0, 180, 'red');
+                    makearc(pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
                 };
                 drawLine(finalPointList);
             },
@@ -136,11 +212,10 @@
                 console.log(typeof data);
             },
             success: function (data, status) {
-                /*var can = document.getElementById('can');
-                var ctx = can.getContext("2d");*/
-                ctx.clearRect(0, 0, 500, 500);
-                drawLine(finalPointList);
-// 登录状态下不会出现这行文字，点击页面右上角一键登录
+
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
+                // 登录状态下不会出现这行文字，点击页面右上角一键登录
             },
             error: function () {
                 console.log("ERROR");
@@ -156,25 +231,18 @@
         if (inputVal.length % 2 !=0){
             alert("输入的坐标个数有误,请重新输入！");
         };
-        console.log(inputVal);
+
         inputVal = inputVal.map(Number);
-        console.log(inputVal);
         debugger;
-        // index = index + inputVal.length;
 
         for (var i =0;i<inputVal.length;i=i+2){
             var point = {};
             point['x']=inputVal[i];
             point['y']=inputVal[i+1];
             index++;
-            console.log(point+"point打印");
+            // console.log(point+"point打印");
             pointList.push(point);
         }
-        console.log("是否将输入的自否串转换成数字数组"+typeof inputVal +inputVal);
-        console.log(pointList);
-        // index = index + inputVal.length;
-        // pointList = pointList.concat(inputVal);
-        console.log(+"查看pointList是否连接成功"+pointList);
 
         $.ajax({
             url: "/test/1",
@@ -188,92 +256,107 @@
                 var finalPointList = eval(data);
                 /*var can = document.getElementById('can');
                 var ctx = can.getContext("2d");*/
-                ctx.clearRect(0, 0, 500, 500);
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
                 for (var i = 0; i < pointList.length; i++) {
-                    makearc(pointList[i], GetRandomNum(4, 4), 0, 180, 'red');
+                    makearc(pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
                 };
                 drawLine(finalPointList);
-// 登录状态下不会出现这行文字，点击页面右上角一键登录
+            // 登录状态下不会出现这行文字，点击页面右上角一键登录
             },
             error: function () {
                 console.log("ERROR");
             }
         });
 
-
-        // console.log(typeof inputVal + "**输入的值**"+inputVal + "长度："+inputVal.length);
-        // alert(inputVal)
-
     });
     //计算点击时canvas画布中的坐标x y；
-    function windowToCanvas(x, y) {
-        var bbox = canvas.getBoundingClientRect();
-        return { x: x - bbox.left * (canvas.width / bbox.width),
-            y: y - bbox.top  * (canvas.height / bbox.height)
-        };
-    }
 
+    var dragIndex;
     //拖拽功能
-    $("#can").onmousedown = function (e) {
-        var loc = windowToCanvas(e.clientX, e.clientY);
 
-        //取消事件的默认动作
-        e.preventDefault();
+       addEventListener('mousedown', function (e) {
+           if(editing == false)
+               return;
+           // editing = true;
+           console.log(editing)
+           debugger;
+           var mousePos = mouseCoords(e);
+           var X = mousePos.x;
+           var Y = mousePos.y;
+           // drawGuidewires(X, Y);
+           console.log("鼠标按下时所得坐标" + X + Y);
+           //取消事件的默认动作
+           e.preventDefault();
+           // console.log(loc.x,loc.y+"鼠标按下时的坐标")
+           for (var i = 0; i < pointList.length; i++) {
+               if (Math.abs(X - pointList[i].x) <= 5 && Math.abs(Y - pointList[i].y) <= 5) {
 
-        if (editing) {
-            polygons.forEach( function (pointList) {
-                pointList.createPath(context);
-                if (context.isPointInPath(loc.x, loc.y)){
-                    startDragging(loc);
-                    dragging = polygon;
-                    draggingOffsetX = loc.x - polygon.x;
-                    draggingOffsetY = loc.y - polygon.y;
-                    return;
-                }
-            });
-        }
-        else {
-            startDragging(loc);
-            dragging = true;
-        }
-    };
+                   dragging = pointList[i];
+                   dragIndex = i;
+                   break;
+               }
+           }
+       }, false);
 
-    $("#can").onmousemove = function (e) {
-        var loc = windowToCanvas(e.clientX, e.clientY);
+       addEventListener('mousemove', function (e) {
+           if (editing == false)
+               return;
+           // editing = true;
+           var mousePos = mouseCoords(e);
+           var X = mousePos.x;
+           var Y = mousePos.y;
 
-        e.preventDefault();
+           e.preventDefault();
 
-        if (editing && dragging) {
-            dragging.x = loc.x - draggingOffsetX;
-            dragging.y = loc.y - draggingOffsetY;
-            context.clearRect(0, 0, canvas.width,canvas.height);
-            drawPolygons();
-        }
-        else {
-            if(dragging) {
-                restoreDrawingSurface();
-                updateRubberband(loc, sides, startAngle);
+           if (dragging && editing) {
+               pointList[dragIndex].x = X;
+               pointList[dragIndex].y = Y;
+               ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-                if (guidewires) {
-                    drawGuidewires(mousedown.x, mousedown.y);
-                }
-            }
-        }
-    };
+               drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
+               // drawGuidewires(X, Y);
+               // drawGuidewires(X, Y);
+               for (var i = 0; i < index; i++) {
+                   makearc(pointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
+                   // drawArc(pointList[i]);
+               }
 
-    $("#can").onmouseup = function (e) {
-        var loc = windowToCanvas(e.clientX, e.clientY);
 
-        dragging = false;
+           $.ajax({
+               url: "/test/1",
+               type: 'POST',//默认为get请求,这里设置为post请求
+               contentType: 'application/json;charset=UTF-8',
+               data: JSON.stringify(pointList),
+               beforeSend: function (data) {
+                   // console.log(typeof data);
+               },
+               success: function (data, status) {
+                   // console.log(data);
+                   var finalPointList = eval(data);
+                   drawLine(finalPointList);
+               },
+               error: function () {
+                   console.log("ERROR");
+               }
+           });
+       }
+           }, false);
 
-        if (editing) {
+       addEventListener('mouseup', function (e) {
+           // editing = true;
+           if(editing == false){
+               return;
+           }
+           if (dragging) {
+               dragging = null
+           }
 
-        }
-        else {
-            restoreDrawingSurface();
-            updateRubberband(loc);
-        }
-    };
+
+       }, false);
+
+
+
 
     function myAnimation() {
         ctx.clearRect(0, 0, globl_w, globl_h);
@@ -281,13 +364,14 @@
 
     //生成圆
     function makearc(point, r, s, e, color) {
-        var can = document.getElementById('can');
-        var ctx = can.getContext("2d");
+        // var can = document.getElementById('can');
+        // var ctx = can.getContext("2d");
         ctx.beginPath();
         ctx.fillStyle = color
         ctx.arc(point['x'], point['y'], r, s, e);
         ctx.fill();
     }
+
 
     function makerect(x, y, w, h) {
         var can = document.getElementById('can');
@@ -306,7 +390,8 @@
             //开始一个新的绘制路径
             ctx.beginPath();
             //设置线条颜色为蓝色
-            ctx.strokeStyle = "red";
+            ctx.strokeStyle = "navy";
+            ctx.lineWidth = 0.5;
             //设置路径起点坐标
             ctx.moveTo(pointList[0].x, pointList[0].y);
             for (var j = 1; j < pointList.length; j++) {
@@ -316,8 +401,6 @@
             ctx.stroke();
         }
     }
-
 </script>
-
 </body>
 </html>
