@@ -23,14 +23,12 @@ import java.util.ArrayList;
 
 @RestController
 public class controller {
-    /*   页面展示   */
-    @RequestMapping(value = "/curve_painting",method = RequestMethod.GET)
+    @RequestMapping(value = "/test",method = RequestMethod.GET)
     public ModelAndView test(){
         ModelAndView mv = new ModelAndView("test");
         return mv;
     }
 
-<<<<<<< Updated upstream
     @PostMapping(value = "/test/1")
     public String test(@RequestBody String pageInPut){
         System.out.println(pageInPut);
@@ -39,17 +37,6 @@ public class controller {
         try {
             CurvePaintingPageInPut curvePaintingPageInPut = mapper.readValue(pageInPut, CurvePaintingPageInPut.class);
             CurvePaintingPageOutPut result = Paint2DService.GetCurve(curvePaintingPageInPut);
-=======
-    /*   绘制   */
-    @PostMapping(value = "/curve_painting/paint")
-    public String line(@RequestBody String pageInput){
-        System.out.println(pageInput);
-        ObjectMapper mapper = new ObjectMapper();
-        String resultList = new String();
-        try {
-            CurvePaintingPageInPut pointList = mapper.readValue(pageInput, CurvePaintingPageInPut.class);
-            CurvePaintingPageOutPut result = Paint2DService.Painting(pointList);
->>>>>>> Stashed changes
             resultList = mapper.writeValueAsString(result);
 //            if (result != null && result.size() != 0) {
 //                WriteCSVUtil.Write2DPointListToCSV(result, "C:\\Users\\WalterWhite\\Desktop\\");
