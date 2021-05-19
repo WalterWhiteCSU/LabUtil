@@ -11,6 +11,7 @@ package com.jnu.labutil.util;
 
 import com.jnu.labutil.entity.Point2D;
 import com.jnu.labutil.entity.Point2DWithParameter;
+import com.jnu.labutil.entity.Vector;
 import org.ujmp.core.Matrix;
 import org.ujmp.core.doublematrix.DoubleMatrix;
 import org.ujmp.core.importer.source.MatrixClipboardImportSource;
@@ -21,23 +22,58 @@ import java.util.ArrayList;
 public class Painting2DUtil {
     static double BEZIER_DELTA = 0.01;
     static double SPLINE_DELTA = 0.01;
+    
+    /*
+     *
+     *   添加控制顶点
+     * */
+    private static ArrayList<Point2D> GetControlPointList(ArrayList<Point2D> pointList) {
+        ArrayList<Point2D> result = new ArrayList<>();
+
+        //添加第一第二个点
+        result.add(pointList.get(0));
+        Vector temp = new Vector(pointList.get(0), pointList.get(1)).zoom(0.5);
+        result.add(pointList.get(0).addVector(temp));
+
+        //添加之后的控制顶点
+        for (int i = 1; i < pointList.size() - 1; i++) {
+            temp = new Vector(pointList.get(i + 1), pointList.get(i - 1)).zoom(0.25);
+            result.add(pointList.get(i).addVector(temp));
+            result.add(pointList.get(i));
+            result.add(pointList.get(i).addVector(temp.zoom(-1.0)));
+        }
+
+        //添加最后一个顶点
+        temp = new Vector(pointList.get(pointList.size() - 1), pointList.get(pointList.size() - 2)).zoom(0.5);
+        result.add(pointList.get(pointList.size() - 1).addVector(temp));
+        result.add(pointList.get(pointList.size() - 1));
+
+        return result;
+    }
 
     /*
-     *   多段线绘制
-     *   @Remark:abandon
-     */
-    public static ArrayList<Point2D> GetLinePointList(Point2D startPoint, Point2D endPoint) {
+     *
+     *   得到三次贝塞尔曲线
+     * */
+    private static ArrayList<Point2D> GetCubeBezier(Point2D point_1, Point2D point_2, Point2D point_3, Point2D point_4) {
         ArrayList<Point2D> result = new ArrayList<>();
-        double x = startPoint.getX();
-        double k = (endPoint.getY() - startPoint.getY()) / (endPoint.getX() - startPoint.getX());
-        double b = startPoint.getY() - k * startPoint.getX();
-        while (x < endPoint.getX()) {
-            x += 1;
+
+        double t = 0.0;
+        while (t < 1.0) {
             Point2D model = new Point2D();
-            model.setX(x);
-            model.setY(k * x + b);
+            model.setX(Math.pow((1 - t), 3) * point_1.getX() + 3 * t * Math.pow(1 - t, 2) * point_2.getX() + 3 * t * t * (1 - t) * point_3.getX() + t * t * t * point_4.getX());
+            model.setY(Math.pow((1 - t), 3) * point_1.getY() + 3 * t * Math.pow(1 - t, 2) * point_2.getX() + 3 * t * t * (1 - t) * point_3.getY() + t * t * t * point_4.getY());
             result.add(model);
+            t += BEZIER_DELTA;
         }
+
+        t = 1.0;
+        Point2D model = new Point2D();
+        model.setX(Math.pow((1 - t), 3) * point_1.getX() + 3 * t * Math.pow(1 - t, 2) * point_2.getX() + 3 * t * t * (1 - t) * point_3.getX() + t * t * t * point_4.getX());
+        model.setY(Math.pow((1 - t), 3) * point_1.getY() + 3 * t * Math.pow(1 - t, 2) * point_2.getX() + 3 * t * t * (1 - t) * point_3.getY() + t * t * t * point_4.getY());
+        result.add(model);
+        model = null;
+
         return result;
     }
 
@@ -45,14 +81,13 @@ public class Painting2DUtil {
      *   三次贝塞尔曲线绘制
      *   @Remark:abandon
      */
-    public static ArrayList<Point2D> GetNURBSPointList(ArrayList<Point2D> pointList) {
+    public static ArrayList<Point2D> GetBezierPointList(ArrayList<Point2D> pointList) {
         ArrayList<Point2D> result = new ArrayList<>();
 
-        /*   均匀参数化   */
-        ArrayList<Point2DWithParameter> point2DWithParameters = ParameterizationUtil.UniformParametric(pointList);
-        //画贝塞尔曲线
-        for (int i = 2; i < pointList.size(); i += 2) {
+        ArrayList<Point2D> controlPointList = GetControlPointList(pointList);
 
+        for (int i = 0; i < controlPointList.size() - 3; i += 3) {
+            result.addAll(GetCubeBezier(controlPointList.get(i), controlPointList.get(i + 1), controlPointList.get(i + 2), controlPointList.get(i + 3)));
         }
 
         return result;
@@ -237,13 +272,51 @@ public class Painting2DUtil {
         ArrayList<Point2D> result = new ArrayList<>();
 
         //参数化
-        ArrayList<Point2DWithParameter> parameterPointList = ParameterizationUtil.UniformParametric(pointList);
+        ArrayList<Point2DWithParameter> parameterPointList = ParameterizationUtil.ChordParametetric(pointList);
 
         //解三弯矩方程
         ArrayList<Double> hList = GetHList(parameterPointList);
         ArrayList<ArrayList<Double>> momentList = GetMomentParameter(parameterPointList, hList);
 
         result = GetSplineCurveResultPointList(hList, momentList, parameterPointList);
+
+        return result;
+    }
+
+    /*
+     *
+     *   画圆
+     * */
+    public static ArrayList<Point2D> GetCircle(Point2D center, double radius) {
+        ArrayList<Point2D> result = new ArrayList<>();
+
+        Vector moveVector = new Vector(new Point2D(0.0, 0.0), center);
+
+        double deltaTheta = radius * 0.5;
+
+        double theta = 0.0;
+        while (theta < 2 * Math.PI) {
+            Point2D model = new Point2D();
+            model.setX(radius * Math.sin(theta));
+            model.setY(radius * Math.cos(theta));
+            result.add(model.addVector(moveVector));
+            theta += deltaTheta;
+        }
+        theta = 2 * Math.PI;
+        Point2D model = new Point2D();
+        model.setX(radius * Math.sin(theta));
+        model.setY(radius * Math.cos(theta));
+        result.add(model);
+        model = null;
+
+        return result;
+    }
+
+    public static ArrayList<Point2D> GetArc(Point2D center, Point2D firstPoint, Point2D secongPoint) {
+        ArrayList<Point2D> result = new ArrayList<>();
+
+        //计算得到半径
+        double radius = Math.sqrt(Math.pow(center.getX() - firstPoint.getX(), 2) + Math.pow(center.getY() - firstPoint.getY(), 2));
 
         return result;
     }

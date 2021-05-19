@@ -18,18 +18,12 @@ public class Paint2DService {
 
     /*   画直线   */
     public static ArrayList<Point2D> GetLine(ArrayList<Point2D> pointList) {
-        ArrayList<Point2D> result = new ArrayList<>();
-
-        for (int i = 0; i < pointList.size() - 1; i++) {
-            result.addAll(Painting2DUtil.GetLinePointList(pointList.get(i), pointList.get(i + 1)));
-        }
-
-        return result;
+        return pointList;
     }
 
     /*   画三次贝塞尔   */
     public static ArrayList<Point2D> GetBezierCurve(ArrayList<Point2D> pointList) {
-        return Painting2DUtil.GetNURBSPointList(pointList);
+        return Painting2DUtil.GetBezierPointList(pointList);
     }
 
     /*   画三次样条曲线   */
