@@ -2,7 +2,11 @@
  /*
  /*   @Author:            LiJiaJun
  /*   @CreateDate:        2021/5/19
+<<<<<<< Updated upstream
  /*   @Description:       The Curve Painting Page InPut
+=======
+ /*   @Description:       The Curve panting page input
+>>>>>>> Stashed changes
  /*
  /********************************************************************
  */

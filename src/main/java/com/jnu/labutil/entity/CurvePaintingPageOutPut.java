@@ -15,6 +15,10 @@ import java.util.ArrayList;
 
 @Data
 public class CurvePaintingPageOutPut {
+<<<<<<< Updated upstream:src/main/java/com/jnu/labutil/entity/CurvePaintingPageOutPut.java
+=======
+
+>>>>>>> Stashed changes:src/main/java/com/jnu/labutil/entity/BezierCurve.java
     private ArrayList<Point2D> pointList;
 
     private ArrayList<Point2D> controlPointList;

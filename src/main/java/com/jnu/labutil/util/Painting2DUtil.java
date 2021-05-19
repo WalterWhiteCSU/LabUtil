@@ -82,13 +82,21 @@ public class Painting2DUtil {
      */
     public static CurvePaintingPageOutPut GetBezierPointList(ArrayList<Point2D> pointList) {
         CurvePaintingPageOutPut result = new CurvePaintingPageOutPut();
+<<<<<<< Updated upstream
 
         ArrayList<Point2D> curvePointList = new ArrayList<>();
+=======
+>>>>>>> Stashed changes
 
         ArrayList<Point2D> controlPointList = GetControlPointList(pointList);
 
+        result.setControlPointList(controlPointList);
         for (int i = 0; i < controlPointList.size() - 3; i += 3) {
+<<<<<<< Updated upstream
             curvePointList.addAll(GetCubeBezier(controlPointList.get(i), controlPointList.get(i + 1), controlPointList.get(i + 2), controlPointList.get(i + 3)));
+=======
+            result.setPointList(GetCubeBezier(controlPointList.get(i), controlPointList.get(i + 1), controlPointList.get(i + 2), controlPointList.get(i + 3)));
+>>>>>>> Stashed changes
         }
 
         result.setPointList(curvePointList);
