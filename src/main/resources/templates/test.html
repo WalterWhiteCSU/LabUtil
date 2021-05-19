@@ -11,21 +11,44 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
-        #coor{
+        #coor {
             width: 200px;
         }
+
+        #box {
+            left: 300px;
+            position: absolute;
+        }
+
         #can {
             background: #ffffff;
+            position: relative;
             cursor: crosshair;
-            margin-left: 10px;
-            margin-top: 10px;
+            margin-left: 250px;
+            margin-top: 150px;
             -webkit-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
             -moz-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
             box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
         }
-        #btnPos{
-            left: 100px;
-            top: 1000px;
+        #btnPos {
+            position: relative;
+            margin-left: 256px;
+            margin-top: -702px;
+        }
+        #axis {
+            /*margin-left: 100px;*/
+        }
+        #drag {
+            margin-left: 30px;
+        }
+        #delete {
+            margin-left: 30px;
+        }
+        #curve {
+            margin-left: 150px;
+        }
+        #importFile {
+            margin-left: 350px;
         }
     </style>
     <script type="text/javascript" src="../js/jquery-3.6.0.js"></script>
@@ -33,27 +56,39 @@
 <body>
 <div id="box" style="width: 1500px;height: 1000px;margin: 0 auto;">
     <canvas id="can" width="1000px" height="700px" >
+
     </canvas>
     <div id="btnPos">
-    <button id="btn1">removeOne</button>
-    <button id="btn2">clear</button>
-    <input id="coor" placeholder="请输入坐标x y以空格作为分隔符" type="text" name="coor" />
-    <button id="submit">提交</button>
-        <input id="1" type="radio" checked name="editing" onclick="draw()" value="1"/>划线
+
+        <span id="axis">
+        <input id="coor" placeholder="请输入坐标x y以空格作为分隔符" type="text" name="coor" />
+        <button id="submit">提交</button>
+        </span>
+
+        <span id="drag">
+        <input id="1" type="radio" checked name="editing" onclick="draw()" value="1"/>绘图
         <input id="2" type="radio" name="editing" onclick="edit()" value="2"/>拖拽
+        </span>
+
+        <span id="delete">
+        <button id="btn1">removeOne</button>
+        <button id="btn2">clear</button>
+        </span>
+
+        <span id="importFile">
+            <button>导出数据</button>
+        </span>
+
     </div>
 
-    <div>
-        <button id="polyline">多段线</button>
-        <button id="bezier">贝塞尔曲线</button>
-        <button id="spline">三次样条曲线</button>
-        <button id="circle">圆</button>
-        <button id="arc">圆弧</button>
+    <div id="curve">
+        <div><button id="polyline">多段线</button></div>
+        <div><button id="bezier">贝赛尔曲线</button></div>
+        <div><button id="spline">三次样条曲线</button></div>
+        <div><button id="circle">圆</button></div>
+        <div><button id="arc">圆弧</button></div>
     </div>
 
-    <div>
-        <button>导出数据</button>
-    </div>
 </div>
 
 <script type="text/javascript">
@@ -165,6 +200,13 @@
         curveInput.pointList = new Array();
     });
 
+    var oldIndex,newPath = false;
+    //双击鼠标左键开启一条新的路径
+    $("#can").dblclick()(function (e) {
+        oldIndex = index + 1;
+        newPath = true;
+    });
+
     //鼠标点击生成圆
         $("#can").click(function (e) {
             if(editing == true)
@@ -206,6 +248,32 @@
                     console.log("ERROR");
                 }
             });
+
+            $.ajax({
+                url: "/test/1",
+                type: 'POST',//默认为get请求,这里设置为post请求
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(curveInput),
+                beforeSend: function (data) {
+                    console.log(typeof data);
+                },
+                success: function (data, status) {
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
+                    for (var i = 0; i < index; i++) {
+                        makearc(curveInput.pointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
+                    }
+                    var finalPointList = eval(data);
+                    /* for (var i = 0; i < pointList.length; i++) {
+                         makearc(curveInput.pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
+                     };*/
+                    drawLine(finalPointList);
+                },
+                error: function () {
+                    console.log("ERROR");
+                }
+            });
+
         });
 
     //removeOne按钮
@@ -307,15 +375,12 @@
         });
 
     });
-    //计算点击时canvas画布中的坐标x y；
 
     var dragIndex;
     //拖拽功能
     addEventListener('mousedown', function (e) {
            if(editing == false)
                return;
-           console.log(editing)
-           debugger;
            var mousePos = mouseCoords(e);
            var X = mousePos.x;
            var Y = mousePos.y;
