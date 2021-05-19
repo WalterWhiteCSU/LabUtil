@@ -186,7 +186,7 @@
                 url: "/test/1",
                 type: 'POST',//默认为get请求,这里设置为post请求
                 contentType: 'application/json;charset=UTF-8',
-                data: JSON.stringify(curveInput.pointList),
+                data: JSON.stringify(curveInput),
                 beforeSend: function (data) {
                      console.log(typeof data);
                 },
@@ -217,7 +217,7 @@
             url: "/test/1",
             type: 'POST',//默认为get请求,这里设置为post请求
             contentType: 'application/json;charset=UTF-8',
-            data: JSON.stringify(curveInput.pointList),
+            data: JSON.stringify(curveInput),
             beforeSend: function (data) {
                 console.log(typeof data);
             },
@@ -247,7 +247,7 @@
             url: "/test/1",
             type: 'POST',//默认为get请求,这里设置为post请求
             contentType: 'application/json;charset=UTF-8',
-            data: JSON.stringify(curveInput.pointList),
+            data: JSON.stringify(curveInput),
             beforeSend: function (data) {
                 console.log(typeof data);
             },
@@ -287,7 +287,7 @@
             url: "/test/1",
             type: 'POST',//默认为get请求,这里设置为post请求
             contentType: 'application/json;charset=UTF-8',
-            data: JSON.stringify(curveInput.pointList),
+            data: JSON.stringify(curveInput),
             beforeSend: function (data) {
                 console.log(typeof data);
             },
@@ -350,7 +350,7 @@
                url: "/test/1",
                type: 'POST',//默认为get请求,这里设置为post请求
                contentType: 'application/json;charset=UTF-8',
-               data: JSON.stringify(curveInput.pointList),
+               data: JSON.stringify(curveInput),
                beforeSend: function (data) {
                    console.log(typeof data);
                },
@@ -378,7 +378,6 @@
                dragging = null
            }
     }, false);
-
     //绘制点
     function makearc(point, r, s, e, color) {
         ctx.beginPath();
