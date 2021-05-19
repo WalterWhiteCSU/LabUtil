@@ -27,7 +27,23 @@ public class Paint2DService {
     }
 
     /*   画三次样条曲线   */
-    public static ArrayList<Point2D> GetSplineCurve(ArrayList<Point2D> pointList){
+    public static ArrayList<Point2D> GetSplineCurve(ArrayList<Point2D> pointList) {
         return Painting2DUtil.GetSplineCurvePointList(pointList);
+    }
+
+    /*   画圆   */
+    public static ArrayList<Point2D> GetCircle(ArrayList<Point2D> pointList) {
+        if (pointList.size() < 2) {
+            return null;
+        }
+        return Painting2DUtil.GetCirclePointList(pointList);
+    }
+
+    /*   画圆弧   */
+    public static ArrayList<Point2D> GetArc(ArrayList<Point2D> pointList) {
+        if (pointList.size() < 3) {
+            return null;
+        }
+        return Painting2DUtil.GetArcPointList(pointList.get(0), pointList.get(1), pointList.get(2));
     }
 }

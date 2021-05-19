@@ -14,15 +14,13 @@ import com.jnu.labutil.entity.Point2DWithParameter;
 import com.jnu.labutil.entity.Vector;
 import org.ujmp.core.Matrix;
 import org.ujmp.core.doublematrix.DoubleMatrix;
-import org.ujmp.core.importer.source.MatrixClipboardImportSource;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Painting2DUtil {
     static double BEZIER_DELTA = 0.01;
     static double SPLINE_DELTA = 0.01;
-    
+
     /*
      *
      *   添加控制顶点
@@ -285,39 +283,81 @@ public class Painting2DUtil {
 
     /*
      *
-     *   画圆
+     *   得到圆弧的点的序列
+     *
      * */
-    public static ArrayList<Point2D> GetCircle(Point2D center, double radius) {
+    private static ArrayList<Point2D> GetArc(double radius, double startAngle, double endAngle, Vector moveVector) {
         ArrayList<Point2D> result = new ArrayList<>();
 
-        Vector moveVector = new Vector(new Point2D(0.0, 0.0), center);
-
-        double deltaTheta = radius * 0.5;
-
-        double theta = 0.0;
-        while (theta < 2 * Math.PI) {
+        double delta = 5.0 / radius;
+        double angle = startAngle;
+        while (angle < endAngle) {
             Point2D model = new Point2D();
-            model.setX(radius * Math.sin(theta));
-            model.setY(radius * Math.cos(theta));
+            model.setX(radius * Math.cos(angle));
+            model.setY(radius * Math.sin(angle));
             result.add(model.addVector(moveVector));
-            theta += deltaTheta;
+            angle += delta;
         }
-        theta = 2 * Math.PI;
+
         Point2D model = new Point2D();
-        model.setX(radius * Math.sin(theta));
-        model.setY(radius * Math.cos(theta));
-        result.add(model);
+        model.setX(radius * Math.cos(endAngle));
+        model.setY(radius * Math.sin(endAngle));
+        result.add(model.addVector(moveVector));
         model = null;
 
         return result;
     }
 
-    public static ArrayList<Point2D> GetArc(Point2D center, Point2D firstPoint, Point2D secongPoint) {
+    /*
+     *
+     *   画圆
+     * */
+    public static ArrayList<Point2D> GetCirclePointList(ArrayList<Point2D> pointList) {
+        ArrayList<Point2D> result = new ArrayList<>();
+
+        //得到圆心点
+        Point2D center = pointList.get(0);
+        //得到半径
+        double radius = Point2D.GetTwoPointDistance(pointList.get(0), pointList.get(1));
+
+        Vector moveVector = new Vector(new Point2D(0.0, 0.0), center);
+
+        result = GetArc(radius, 0.0, 2 * Math.PI, moveVector);
+
+        return result;
+    }
+
+    public static ArrayList<Point2D> GetArcPointList(Point2D center, Point2D firstPoint, Point2D secongPoint) {
         ArrayList<Point2D> result = new ArrayList<>();
 
         //计算得到半径
         double radius = Math.sqrt(Math.pow(center.getX() - firstPoint.getX(), 2) + Math.pow(center.getY() - firstPoint.getY(), 2));
 
+        Vector moveVector = new Vector(new Point2D(0.0, 0.0), center);
+        //得到x正方向的向量
+        Vector xVector = new Vector(1.0, 0.0, 0.0);
+        Vector startVector = new Vector(center, firstPoint);
+        Vector endVector = new Vector(center, secongPoint);
+
+        //得到起始边和终止边与x正方向的夹角
+        double startAngle = Vector.GetAngle(xVector, startVector);
+        double endAngle = Vector.GetAngle(xVector, endVector);
+
+        //得到正确的角度
+        if (startVector.getY() < 0.0)
+            startAngle *= -1.0;
+        if (endVector.getY() < 0.0)
+            endAngle *= -1.0;
+
+        if (startAngle == endAngle)
+            return null;
+
+        //如果起始角度大于终止角度，需要将终止角度加360
+        if (startAngle > endAngle)
+            endAngle += Math.PI * 2;
+
+        //得到结果
+        result = GetArc(radius, startAngle, endAngle, moveVector);
         return result;
     }
 }
