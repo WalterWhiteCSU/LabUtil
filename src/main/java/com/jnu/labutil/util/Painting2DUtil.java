@@ -9,6 +9,7 @@
 
 package com.jnu.labutil.util;
 
+import com.jnu.labutil.entity.CurvePaintingPageOutPut;
 import com.jnu.labutil.entity.Point2D;
 import com.jnu.labutil.entity.Point2DWithParameter;
 import com.jnu.labutil.entity.Vector;
@@ -79,14 +80,19 @@ public class Painting2DUtil {
      *   三次贝塞尔曲线绘制
      *   @Remark:abandon
      */
-    public static ArrayList<Point2D> GetBezierPointList(ArrayList<Point2D> pointList) {
-        ArrayList<Point2D> result = new ArrayList<>();
+    public static CurvePaintingPageOutPut GetBezierPointList(ArrayList<Point2D> pointList) {
+        CurvePaintingPageOutPut result = new CurvePaintingPageOutPut();
+
+        ArrayList<Point2D> curvePointList = new ArrayList<>();
 
         ArrayList<Point2D> controlPointList = GetControlPointList(pointList);
 
         for (int i = 0; i < controlPointList.size() - 3; i += 3) {
-            result.addAll(GetCubeBezier(controlPointList.get(i), controlPointList.get(i + 1), controlPointList.get(i + 2), controlPointList.get(i + 3)));
+            curvePointList.addAll(GetCubeBezier(controlPointList.get(i), controlPointList.get(i + 1), controlPointList.get(i + 2), controlPointList.get(i + 3)));
         }
+
+        result.setPointList(curvePointList);
+        result.setControlPointList(controlPointList);
 
         return result;
     }

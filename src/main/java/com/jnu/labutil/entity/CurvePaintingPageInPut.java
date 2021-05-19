@@ -1,8 +1,12 @@
 /*******************************************************************
  /*
  /*   @Author:            LiJiaJun
- /*   @CreateDate:        2021/5/18
- /*   @Description:       The Bezier Curve Entity
+ /*   @CreateDate:        2021/5/19
+<<<<<<< Updated upstream
+ /*   @Description:       The Curve Painting Page InPut
+=======
+ /*   @Description:       The Curve panting page input
+>>>>>>> Stashed changes
  /*
  /********************************************************************
  */
@@ -14,9 +18,7 @@ import lombok.Data;
 import java.util.ArrayList;
 
 @Data
-public class BezierCurve {
-
+public class CurvePaintingPageInPut {
+    private String paintingType;
     private ArrayList<Point2D> pointList;
-
-    private ArrayList<Point2D> controlPointList;
 }

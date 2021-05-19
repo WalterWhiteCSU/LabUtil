@@ -12,6 +12,8 @@ package com.jnu.labutil.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jnu.labutil.entity.CurvePaintingPageInPut;
+import com.jnu.labutil.entity.CurvePaintingPageOutPut;
 import com.jnu.labutil.entity.Point2D;
 import com.jnu.labutil.service.Paint2DService;
 import org.springframework.web.bind.annotation.*;
@@ -28,14 +30,13 @@ public class controller {
     }
 
     @PostMapping(value = "/test/1")
-    public String test(@RequestBody String point){
-        System.out.println(point);
+    public String test(@RequestBody String pageInPut){
+        System.out.println(pageInPut);
         ObjectMapper mapper = new ObjectMapper();
         String resultList = new String();
         try {
-            ArrayList<Point2D> pointList = mapper.readValue(point, new TypeReference<ArrayList<Point2D>>() {
-            });
-            ArrayList<Point2D> result = Paint2DService.GetBezierCurve(pointList);
+            CurvePaintingPageInPut curvePaintingPageInPut = mapper.readValue(pageInPut, CurvePaintingPageInPut.class);
+            CurvePaintingPageOutPut result = Paint2DService.GetCurve(curvePaintingPageInPut);
             resultList = mapper.writeValueAsString(result);
 //            if (result != null && result.size() != 0) {
 //                WriteCSVUtil.Write2DPointListToCSV(result, "C:\\Users\\WalterWhite\\Desktop\\");
