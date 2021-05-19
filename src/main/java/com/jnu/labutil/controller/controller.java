@@ -35,7 +35,7 @@ public class controller {
         try {
             ArrayList<Point2D> pointList = mapper.readValue(point, new TypeReference<ArrayList<Point2D>>() {
             });
-            ArrayList<Point2D> result = Paint2DService.GetLine(pointList);
+            ArrayList<Point2D> result = Paint2DService.GetBezierCurve(pointList);
             resultList = mapper.writeValueAsString(result);
 //            if (result != null && result.size() != 0) {
 //                WriteCSVUtil.Write2DPointListToCSV(result, "C:\\Users\\WalterWhite\\Desktop\\");
