@@ -11,6 +11,16 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
+        body{
+            width: 100%;
+            height: 100%;
+        }
+
+        html{
+            width: 100%;
+            height: 100%;
+        }
+
         #coor {
             width: 200px;
         }
@@ -22,8 +32,8 @@
 
         #can {
             background: #ffffff;
-            position: relative;
             cursor: crosshair;
+            position: relative;
             margin-left: 250px;
             margin-top: 150px;
             -webkit-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
@@ -127,12 +137,10 @@
     function draw(){
       var a= $("#1").checked = true;
       editing = false;
-      console.log(editing+"  nima***")
     };
     function edit(){
         var b = $("#2").checked = false;
         editing = true;
-        console.log(editing+"  nida+++")
     };
 
     //绘制网格
@@ -167,45 +175,47 @@
         pointList:[]
     };
     //获取多段线按钮
-    $("polyline").click(function (){
+    $("#polyline").click(function (){
 
         curveInput.paintingType = "Line";
         curveInput.pointList = new Array();
     });
 
     //获取贝塞尔按钮
-    $("bezier").click(function (){
+    $("#bezier").click(function (){
 
         curveInput.paintingType = "Bezier";
         curveInput.pointList = new Array();
     });
 
     //获取三次样条曲线按钮
-    $("spline").click(function (){
+    $("#spline").click(function (){
 
         curveInput.paintingType = "Spline";
         curveInput.pointList = new Array();
     });
 
     //获取圆按钮
-    $("circle").click(function (){
+    $("#circle").click(function (){
 
         curveInput.paintingType = "Circle";
         curveInput.pointList = new Array();
     });
 
     //获取圆弧按钮
-    $("Arc").click(function (){
+    $("#Arc").click(function (){
         curveInput.paintingType = "Arc";
         curveInput.pointList = new Array();
     });
 
     var oldIndex,newPath = false;
     //双击鼠标左键开启一条新的路径
-    $("#can").dblclick()(function (e) {
+    $("#can").dblclick(function (e) {
         oldIndex = index + 1;
         newPath = true;
+        alert("双击");
     });
+
 
     //鼠标点击生成圆
         $("#can").click(function (e) {
@@ -223,7 +233,9 @@
             // pointList.push(point);
             index++;
 
-            var data = JSON.stringify(pointList);
+            if (curveInput.pointList == null)
+                return;
+            // var data = JSON.stringify(pointList);
             $.ajax({
                 url: "/test/1",
                 type: 'POST',//默认为get请求,这里设置为post请求
@@ -235,44 +247,25 @@
                 success: function (data, status) {
                     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                     drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                    for (var i = 0; i < index; i++) {
+/*                    for (var i = 0; i < index; i++) {
                         makearc(curveInput.pointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
+                    }*/
+                    var finalPointList = JSON.parse(data);
+                    for (var i = 0; i < finalPointList.controlPointList.length; i++) {
+                        makearc(finalPointList.controlPointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
+                    };
+                    makearc(finalPointList.controlPointList[0], GetRandomNum(4,4), 0, 180, 'green');
+                    makearc(finalPointList.controlPointList[finalPointList.controlPointList.length-1], GetRandomNum(4,4), 0, 180, 'green');
+                    drawLine(finalPointList.pointList);
+                    if (curveInput.paintingType == "Bezier"){
+                    controlLine(finalPointList.controlPointList);
                     }
-                    var finalPointList = eval(data);
-                   /* for (var i = 0; i < pointList.length; i++) {
-                        makearc(curveInput.pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
-                    };*/
-                    drawLine(finalPointList);
                 },
                 error: function () {
                     console.log("ERROR");
                 }
             });
 
-            $.ajax({
-                url: "/test/1",
-                type: 'POST',//默认为get请求,这里设置为post请求
-                contentType: 'application/json;charset=UTF-8',
-                data: JSON.stringify(curveInput),
-                beforeSend: function (data) {
-                    console.log(typeof data);
-                },
-                success: function (data, status) {
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                    for (var i = 0; i < index; i++) {
-                        makearc(curveInput.pointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
-                    }
-                    var finalPointList = eval(data);
-                    /* for (var i = 0; i < pointList.length; i++) {
-                         makearc(curveInput.pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
-                     };*/
-                    drawLine(finalPointList);
-                },
-                error: function () {
-                    console.log("ERROR");
-                }
-            });
 
         });
 
@@ -291,14 +284,16 @@
             },
             success: function (data, status) {
 
-                var finalPointList = eval(data);
+                var finalPointList = JSON.parse(data);
 
                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                for (var i = 0; i < curveInput.pointList.length; i++) {
-                    makearc(curveInput.pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
+                for (var i = 0; i < finalPointList.controlPointList.length; i++) {
+                    makearc(finalPointList.controlPointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
                 };
-                drawLine(finalPointList);
+                makearc(finalPointList.controlPointList[0], GetRandomNum(4,4), 0, 180, 'green');
+                makearc(finalPointList.controlPointList[finalPointList.controlPointList.length-1], GetRandomNum(4,4), 0, 180, 'green');
+                drawLine(finalPointList.pointList);
             },
             error: function () {
                 console.log("ERROR");
@@ -360,13 +355,13 @@
                 console.log(typeof data);
             },
             success: function (data, status) {
-                var finalPointList = eval(data);
+                var finalPointList = JSON.parse(data);
                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                for (var i = 0; i < curveInput.pointList.length; i++) {
-                    makearc(curveInput.pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
+                for (var i = 0; i < finalPointList.controlPointList.length; i++) {
+                    makearc(finalPointList.controlPointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
                 };
-                drawLine(finalPointList);
+                drawLine(finalPointList.pointList);
             // 登录状态下不会出现这行文字，点击页面右上角一键登录
             },
             error: function () {
@@ -405,6 +400,8 @@
            var X = mousePos.x;
            var Y = mousePos.y;
 
+
+
            e.preventDefault();
 
            if (dragging && editing) {
@@ -420,13 +417,18 @@
                    console.log(typeof data);
                },
                success: function (data, status) {
-                   var finalPointList = eval(data);
+                   var finalPointList = JSON.parse(data);
                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                    drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                   for (var i = 0; i < index; i++) {
-                       makearc(curveInput.pointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
+                   for (var i = 0; i < finalPointList.controlPointList.length; i++) {
+                       makearc(finalPointList.controlPointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
                    }
-                   drawLine(finalPointList);
+                   drawGuidewires(X,Y);
+                   drawLine(finalPointList.pointList);
+                   if (curveInput.paintingType == "Bezier"){
+                       controlLine(finalPointList.controlPointList);
+                   }
+
                },
                error: function () {
                    console.log("ERROR");
@@ -443,7 +445,8 @@
                dragging = null
            }
     }, false);
-    //绘制点
+
+    //绘制点 参数：包含xy坐标的数组，半径、初始角度、结束角度、颜色
     function makearc(point, r, s, e, color) {
         ctx.beginPath();
         ctx.fillStyle = color
@@ -453,6 +456,31 @@
 
     function makerect(x, y, w, h) {
         ctx.strokeRect(x, y, w, h);
+    }
+
+    //绘制控制线
+    function controlLine(point){
+        if (point == null)
+            return;
+        drawLin(point[0].x,point[0].y,point[1].x,point[1].y);
+        for (var i = 2; i < point.length-2; i+=3) {
+            drawLin(point[i].x,point[i].y,point[i+1].x,point[i+1].y);
+            drawLin(point[i+1].x,point[i+1].y,point[i+2].x,point[i+2].y);
+        }
+        drawLin(point[point.length-2].x,point[point.length-2].y,point[point.length-1].x,point[point.length-1].y);
+    }
+
+    function drawLin(x1,y1,x2,y2){
+        ctx.beginPath();
+        //设置线条颜色为蓝色
+        ctx.strokeStyle = "gray";
+        ctx.lineWidth = 0.5;
+        // debugger;
+        //设置路径起点坐标
+        ctx.moveTo(x1,y1);
+        ctx.lineTo(x2,y2);
+        //按照绘制路径顺序连接各个坐标点
+        ctx.stroke();
     }
 
     //绘制线段
@@ -475,6 +503,53 @@
             //按照绘制路径顺序连接各个坐标点
             ctx.stroke();
         }
+    }
+
+    //绘制辅助线
+    function drawHorizontalLine (y) {
+        ctx.beginPath();
+        ctx.strokeStyle = "red";
+        ctx.moveTo(0, y+0.5);
+        ctx.lineTo(ctx.canvas.width, y+0.5);
+        ctx.stroke();
+    }
+
+    function drawVerticalLine (x) {
+        ctx.beginPath();
+        ctx.moveTo(x+0.5, 0);
+        ctx.lineTo(x+0.5, ctx.canvas.height);
+        ctx.stroke();
+    }
+
+    function drawGuidewires(x, y) {
+        ctx.save();
+        ctx.strokeStyle = 'rgb(212,16,94)';
+        ctx.lineWidth = 0.5;
+        drawVerticalLine(x);
+        drawHorizontalLine(y);
+        ctx.restore();
+    }
+    function drawHorizontalLine (y) {
+        ctx.beginPath();
+        ctx.moveTo(0, y+0.5);
+        ctx.lineTo(ctx.canvas.width, y+0.5);
+        ctx.stroke();
+    }
+
+    function drawVerticalLine (x) {
+        ctx.beginPath();
+        ctx.moveTo(x+0.5, 0);
+        ctx.lineTo(x+0.5, ctx.canvas.height);
+        ctx.stroke();
+    }
+
+    function drawGuidewires(x, y) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0,0,230,0.4)';
+        ctx.lineWidth = 0.5;
+        drawVerticalLine(x);
+        drawHorizontalLine(y);
+        ctx.restore();
     }
 </script>
 </body>
