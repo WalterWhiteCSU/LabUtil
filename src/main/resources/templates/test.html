@@ -11,6 +11,16 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
         #coor {
             width: 200px;
         }
@@ -22,31 +32,37 @@
 
         #can {
             background: #ffffff;
-            position: relative;
             cursor: crosshair;
+            position: relative;
             margin-left: 250px;
             margin-top: 150px;
-            -webkit-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
-            -moz-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
-            box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+            -webkit-box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+            -moz-box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
         }
+
         #btnPos {
             position: relative;
             margin-left: 256px;
             margin-top: -702px;
         }
+
         #axis {
             /*margin-left: 100px;*/
         }
+
         #drag {
             margin-left: 30px;
         }
+
         #delete {
             margin-left: 30px;
         }
+
         #curve {
             margin-left: 150px;
         }
+
         #importFile {
             margin-left: 350px;
         }
@@ -55,13 +71,13 @@
 </head>
 <body>
 <div id="box" style="width: 1500px;height: 1000px;margin: 0 auto;">
-    <canvas id="can" width="1000px" height="700px" >
+    <canvas id="can" width="1000px" height="700px">
 
     </canvas>
     <div id="btnPos">
 
         <span id="axis">
-        <input id="coor" placeholder="请输入坐标x y以空格作为分隔符" type="text" name="coor" />
+        <input id="coor" placeholder="请输入坐标x y以空格作为分隔符" type="text" name="coor"/>
         <button id="submit">提交</button>
         </span>
 
@@ -82,11 +98,21 @@
     </div>
 
     <div id="curve">
-        <div><button id="polyline">多段线</button></div>
-        <div><button id="bezier">贝赛尔曲线</button></div>
-        <div><button id="spline">三次样条曲线</button></div>
-        <div><button id="circle">圆</button></div>
-        <div><button id="arc">圆弧</button></div>
+        <div>
+            <button id="Line" class="paintingType" value="Line">多段线</button>
+        </div>
+        <div>
+            <button id="Bezier" class="paintingType" value="Bezier">贝赛尔曲线</button>
+        </div>
+        <div>
+            <button id="Spline" class="paintingType" value="Spline">三次样条曲线</button>
+        </div>
+        <div>
+            <button id="Circle" class="paintingType">圆</button>
+        </div>
+        <div>
+            <button id="Arc" class="paintingType">圆弧</button>
+        </div>
     </div>
 
 </div>
@@ -98,10 +124,13 @@
     var dragging;
     //是否可编辑
     var editing = false;
-    var  GRID_STROKE_STYLE = 'lightblue', GRID_SPACING = 10;
+    var GRID_STROKE_STYLE = 'lightblue', GRID_SPACING = 10;
     //小圆点的半径
-    var rx = 3,ry=3;
+    var rx = 3, ry = 3;
     var globl_w = 500;
+
+    var paintingEntity = [];
+    var finalPointList;
 
     //设置点的大小
     function GetRandomNum(Min, Max) {
@@ -124,19 +153,18 @@
     var pointList = new Array();
 
     //画线拖拽单选框
-    function draw(){
-      var a= $("#1").checked = true;
-      editing = false;
-      console.log(editing+"  nima***")
+    function draw() {
+        var a = $("#1").checked = true;
+        editing = false;
     };
-    function edit(){
+
+    function edit() {
         var b = $("#2").checked = false;
         editing = true;
-        console.log(editing+"  nida+++")
     };
 
     //绘制网格
-    function drawGrid(color, stepX, stepY){
+    function drawGrid(color, stepX, stepY) {
         ctx.save()
 
         ctx.strokeStyle = color;
@@ -159,291 +187,296 @@
 
         ctx.restore();
     };
+
     drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
 
     //绘制图形的类型
     var curveInput = {
-        paintingType:"Line",
-        pointList:[]
+        paintingType: "Line",
+        pointList: []
     };
-    //获取多段线按钮
-    $("polyline").click(function (){
 
-        curveInput.paintingType = "Line";
-        curveInput.pointList = new Array();
+    //获取绘制类型
+    $(".paintingType").click(function (e) {
+
+        curveInput.paintingType = e.currentTarget.id;
+        curveInput.pointList = [];
+        if (finalPointList != null) {
+            var model = {
+                pointList: finalPointList.pointList,
+                controlPointList: finalPointList.controlPointList,
+                paintingType: finalPointList.paintingType
+            }
+            paintingEntity.push(model);
+            finalPointList = null;
+        }
     });
 
-    //获取贝塞尔按钮
-    $("bezier").click(function (){
+    // //获取贝塞尔按钮
+    // $("#bezier").click(function () {
+    //
+    //     curveInput.paintingType = "Bezier";
+    //     curveInput.pointList = new Array();
+    //
+    //     if (finalPointList != null) {
+    //         var model = finalPointList;
+    //         paintingEntity.push(model);
+    //     }
+    // });
+    //
+    // //获取三次样条曲线按钮
+    // $("#spline").click(function () {
+    //
+    //     curveInput.paintingType = "Spline";
+    //     curveInput.pointList = new Array();
+    //     if (finalPointList != null) {
+    //         var model = finalPointList;
+    //         paintingEntity.push(model);
+    //     }
+    // });
+    //
+    // //获取圆按钮
+    // $("#circle").click(function () {
+    //
+    //     curveInput.paintingType = "Circle";
+    //     curveInput.pointList = new Array();
+    //     if (finalPointList != null) {
+    //         var model = finalPointList;
+    //         paintingEntity.push(model);
+    //         finalPointList.clear();
+    //     }
+    // });
+    //
+    // //获取圆弧按钮
+    // $("#Arc").click(function () {
+    //     curveInput.paintingType = "Arc";
+    //     curveInput.pointList = new Array();
+    //     if (finalPointList != null) {
+    //         var model = finalPointList;
+    //         paintingEntity.push(model);
+    //         finalPointList.clear();
+    //     }
+    // });
 
-        curveInput.paintingType = "Bezier";
-        curveInput.pointList = new Array();
-    });
+    // var oldIndex, newPath = false;
+    // //双击鼠标左键开启一条新的路径
+    // $("#can").dblclick(function (e) {
+    //     oldIndex = index + 1;
+    //     newPath = true;
+    //     alert("双击");
+    // });
 
-    //获取三次样条曲线按钮
-    $("spline").click(function (){
+    function initCanvas() {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
 
-        curveInput.paintingType = "Spline";
-        curveInput.pointList = new Array();
-    });
+    }
 
-    //获取圆按钮
-    $("circle").click(function (){
+    function paintingItem(item) {
+        //画点
+        for (var i = 0; i < item.controlPointList.length; i++) {
+            makearc(item.controlPointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
+        }
+        ;
+        makearc(item.controlPointList[0], GetRandomNum(4, 4), 0, 180, 'green');
+        makearc(item.controlPointList[item.controlPointList.length - 1], GetRandomNum(4, 4), 0, 180, 'green');
 
-        curveInput.paintingType = "Circle";
-        curveInput.pointList = new Array();
-    });
+        //画线
+        drawLine(item.pointList);
 
-    //获取圆弧按钮
-    $("Arc").click(function (){
-        curveInput.paintingType = "Arc";
-        curveInput.pointList = new Array();
-    });
+    }
 
-    var oldIndex,newPath = false;
-    //双击鼠标左键开启一条新的路径
-    $("#can").dblclick()(function (e) {
-        oldIndex = index + 1;
-        newPath = true;
-    });
-
-    //鼠标点击生成圆
-        $("#can").click(function (e) {
-            if(editing == true)
-                return;
-            var ev = ev || window.event;
-            var mousePos = mouseCoords(ev);
-            mousePosX = mousePos.x;
-            mousePosY = mousePos.y;
-
-            var point = {};
-            point['x'] = mousePosX;
-            point['y'] = mousePosY;
-            curveInput.pointList.push(point);
-            // pointList.push(point);
-            index++;
-
-            var data = JSON.stringify(pointList);
-            $.ajax({
-                url: "/test/1",
-                type: 'POST',//默认为get请求,这里设置为post请求
-                contentType: 'application/json;charset=UTF-8',
-                data: JSON.stringify(curveInput),
-                beforeSend: function (data) {
-                     console.log(typeof data);
-                },
-                success: function (data, status) {
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                    for (var i = 0; i < index; i++) {
-                        makearc(curveInput.pointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
-                    }
-                    var finalPointList = eval(data);
-                   /* for (var i = 0; i < pointList.length; i++) {
-                        makearc(curveInput.pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
-                    };*/
-                    drawLine(finalPointList);
-                },
-                error: function () {
-                    console.log("ERROR");
+    function postPointData(X,Y) {
+        $.ajax({
+            url: "/test/1",
+            type: 'POST',//默认为get请求,这里设置为post请求
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(curveInput),
+            beforeSend: function (data) {
+                console.log(typeof data);
+            },
+            success: function (data, status) {
+                initCanvas();
+                finalPointList = JSON.parse(data);
+                for (let i = 0; i < paintingEntity.length; i++) {
+                    paintingItem(paintingEntity[i]);
                 }
-            });
-
-            $.ajax({
-                url: "/test/1",
-                type: 'POST',//默认为get请求,这里设置为post请求
-                contentType: 'application/json;charset=UTF-8',
-                data: JSON.stringify(curveInput),
-                beforeSend: function (data) {
-                    console.log(typeof data);
-                },
-                success: function (data, status) {
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                    for (var i = 0; i < index; i++) {
-                        makearc(curveInput.pointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
-                    }
-                    var finalPointList = eval(data);
-                    /* for (var i = 0; i < pointList.length; i++) {
-                         makearc(curveInput.pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
-                     };*/
-                    drawLine(finalPointList);
-                },
-                error: function () {
-                    console.log("ERROR");
+                if (dragging) {
+                    drawGuidewires(X, Y);
                 }
-            });
+                paintingItem(finalPointList);
+                // //画点
+                // for (var i = 0; i < finalPointList.controlPointList.length; i++) {
+                //     makearc(finalPointList.controlPointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
+                // };
+                // makearc(finalPointList.controlPointList[0], GetRandomNum(4, 4), 0, 180, 'green');
+                // makearc(finalPointList.controlPointList[finalPointList.controlPointList.length - 1], GetRandomNum(4, 4), 0, 180, 'green');
+                //
+                // //画线
+                // drawLine(finalPointList.pointList);
 
+                //画控制线
+                if (curveInput.paintingType == "Bezier") {
+                    controlLine(finalPointList.controlPointList);
+                }
+            },
+            error: function () {
+                console.log("ERROR");
+            }
         });
+    }
+
+    //鼠标点击绘制
+    $("#can").click(function (e) {
+        if (editing == true)
+            return;
+        var ev = ev || window.event;
+        var mousePos = mouseCoords(ev);
+        mousePosX = mousePos.x;
+        mousePosY = mousePos.y;
+
+        var point = {};
+        point['x'] = mousePosX;
+        point['y'] = mousePosY;
+        curveInput.pointList.push(point);
+        // pointList.push(point);
+        index++;
+
+        // if (curveInput.pointList == null)
+        //     return;
+        // var data = JSON.stringify(pointList);
+
+        //post数据
+        postPointData();
+    });
 
     //removeOne按钮
-    $("#btn1").click(function (e){
-        // debugger
+    $("#btn1").click(function (e) {
         curveInput.pointList.pop();
         index--;
-        $.ajax({
-            url: "/test/1",
-            type: 'POST',//默认为get请求,这里设置为post请求
-            contentType: 'application/json;charset=UTF-8',
-            data: JSON.stringify(curveInput),
-            beforeSend: function (data) {
-                console.log(typeof data);
-            },
-            success: function (data, status) {
 
-                var finalPointList = eval(data);
-
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                for (var i = 0; i < curveInput.pointList.length; i++) {
-                    makearc(curveInput.pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
-                };
-                drawLine(finalPointList);
-            },
-            error: function () {
-                console.log("ERROR");
-            }
-        });
-
+        //post数据
+        postPointData();
     });
 
+    var lastPaintingModel;
     //clear按钮
-    $("#btn2").click(function (e){
-        curveInput.pointList = [];
-        index = 0;
-        $.ajax({
-            url: "/test/1",
-            type: 'POST',//默认为get请求,这里设置为post请求
-            contentType: 'application/json;charset=UTF-8',
-            data: JSON.stringify(curveInput),
-            beforeSend: function (data) {
-                console.log(typeof data);
-            },
-            success: function (data, status) {
+    $("#btn2").click(function (e) {
+        if (paintingEntity.length != 0) {
 
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                // 登录状态下不会出现这行文字，点击页面右上角一键登录
-            },
-            error: function () {
-                console.log("ERROR");
-            }
-        });
+            lastPaintingModel = paintingEntity.pop();
+            curveInput.pointList = lastPaintingModel.controlPointList;
+            index = curveInput.pointList.length - 1;
+            curveInput.paintingType = lastPaintingModel.paintingType;
+        } else {
+            initCanvas();
+            curveInput.pointList = [];
+        }
+        postPointData();
 
     });
 
     //手动输入xy坐标的值
-    $("#submit").click(function (){
+    $("#submit").click(function () {
         var inputVal = $("#coor").val();
         inputVal = inputVal.split(" ");
-        if (inputVal.length % 2 !=0){
+        if (inputVal.length % 2 != 0) {
             alert("输入的坐标个数有误,请重新输入！");
-        };
+        }
+        ;
 
         inputVal = inputVal.map(Number);
 
-        for (var i =0;i<inputVal.length;i=i+2){
+        for (var i = 0; i < inputVal.length; i = i + 2) {
             var point = {};
-            point['x']=inputVal[i];
-            point['y']=inputVal[i+1];
+            point['x'] = inputVal[i];
+            point['y'] = inputVal[i + 1];
             index++;
             // console.log(point+"point打印");
             curveInput.pointList.push(point);
         }
 
-        $.ajax({
-            url: "/test/1",
-            type: 'POST',//默认为get请求,这里设置为post请求
-            contentType: 'application/json;charset=UTF-8',
-            data: JSON.stringify(curveInput),
-            beforeSend: function (data) {
-                console.log(typeof data);
-            },
-            success: function (data, status) {
-                var finalPointList = eval(data);
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                for (var i = 0; i < curveInput.pointList.length; i++) {
-                    makearc(curveInput.pointList[i], GetRandomNum(rx,ry), 0, 180, 'red');
-                };
-                drawLine(finalPointList);
-            // 登录状态下不会出现这行文字，点击页面右上角一键登录
-            },
-            error: function () {
-                console.log("ERROR");
-            }
-        });
+        postPointData();
 
     });
 
     var dragIndex;
     //拖拽功能
     addEventListener('mousedown', function (e) {
-           if(editing == false)
-               return;
-           var mousePos = mouseCoords(e);
-           var X = mousePos.x;
-           var Y = mousePos.y;
-           console.log("鼠标按下时所得坐标" + X + Y);
-           //取消事件的默认动作
-           e.preventDefault();
-           for (var i = 0; i < curveInput.pointList.length; i++) {
-               if (Math.abs(X - curveInput.pointList[i].x) <= 5 && Math.abs(Y - curveInput.pointList[i].y) <= 5) {
-                   dragging = curveInput.pointList[i];
-                   dragIndex = i;
-                   break;
-               }
-           }
+        if (editing == false)
+            return;
+        var mousePos = mouseCoords(e);
+        var X = mousePos.x;
+        var Y = mousePos.y;
+        console.log("鼠标按下时所得坐标" + X + Y);
+        //取消事件的默认动作
+        e.preventDefault();
+        for (var i = 0; i < curveInput.pointList.length; i++) {
+            if (Math.abs(X - curveInput.pointList[i].x) <= 5 && Math.abs(Y - curveInput.pointList[i].y) <= 5) {
+                dragging = curveInput.pointList[i];
+                dragIndex = i;
+                break;
+            }
+        }
     }, false);
 
     //鼠标移动时绘制曲线
     addEventListener('mousemove', function (e) {
-           if (editing == false)
-               return;
+        if (editing == false)
+            return;
 
-           var mousePos = mouseCoords(e);
-           var X = mousePos.x;
-           var Y = mousePos.y;
+        var mousePos = mouseCoords(e);
+        var X = mousePos.x;
+        var Y = mousePos.y;
 
-           e.preventDefault();
 
-           if (dragging && editing) {
-               curveInput.pointList[dragIndex].x = X;
-               curveInput.pointList[dragIndex].y = Y;
+        e.preventDefault();
 
-           $.ajax({
-               url: "/test/1",
-               type: 'POST',//默认为get请求,这里设置为post请求
-               contentType: 'application/json;charset=UTF-8',
-               data: JSON.stringify(curveInput),
-               beforeSend: function (data) {
-                   console.log(typeof data);
-               },
-               success: function (data, status) {
-                   var finalPointList = eval(data);
-                   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                   drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
-                   for (var i = 0; i < index; i++) {
-                       makearc(curveInput.pointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
-                   }
-                   drawLine(finalPointList);
-               },
-               error: function () {
-                   console.log("ERROR");
-               }
-           });
-       }
+        if (dragging && editing) {
+            curveInput.pointList[dragIndex].x = X;
+            curveInput.pointList[dragIndex].y = Y;
+
+            // $.ajax({
+            //     url: "/test/1",
+            //     type: 'POST',//默认为get请求,这里设置为post请求
+            //     contentType: 'application/json;charset=UTF-8',
+            //     data: JSON.stringify(curveInput),
+            //     beforeSend: function (data) {
+            //         console.log(typeof data);
+            //     },
+            //     success: function (data, status) {
+            //         finalPointList = JSON.parse(data);
+            //         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            //         drawGrid(GRID_STROKE_STYLE, GRID_SPACING, GRID_SPACING);
+            //         for (var i = 0; i < finalPointList.controlPointList.length; i++) {
+            //             makearc(finalPointList.controlPointList[i], GetRandomNum(rx, ry), 0, 180, 'red');
+            //         }
+            //         drawGuidewires(X, Y);
+            //         drawLine(finalPointList.pointList);
+            //         if (curveInput.paintingType == "Bezier") {
+            //             controlLine(finalPointList.controlPointList);
+            //         }
+            //
+            //     },
+            //     error: function () {
+            //         console.log("ERROR");
+            //     }
+            // });
+
+            postPointData(X,Y);
+        }
     }, false);
 
-       //鼠标松开事件
+    //鼠标松开事件
     addEventListener('mouseup', function (e) {
-           if(editing == false)
-               return;
-           if (dragging) {
-               dragging = null
-           }
+        if (editing == false)
+            return;
+        if (dragging) {
+            dragging = null
+        }
     }, false);
-    //绘制点
+
+    //绘制点 参数：包含xy坐标的数组，半径、初始角度、结束角度、颜色
     function makearc(point, r, s, e, color) {
         ctx.beginPath();
         ctx.fillStyle = color
@@ -455,12 +488,37 @@
         ctx.strokeRect(x, y, w, h);
     }
 
+    //绘制控制线
+    function controlLine(point) {
+        if (point == null)
+            return;
+        drawLin(point[0].x, point[0].y, point[1].x, point[1].y);
+        for (var i = 2; i < point.length - 2; i += 3) {
+            drawLin(point[i].x, point[i].y, point[i + 1].x, point[i + 1].y);
+            drawLin(point[i + 1].x, point[i + 1].y, point[i + 2].x, point[i + 2].y);
+        }
+        drawLin(point[point.length - 2].x, point[point.length - 2].y, point[point.length - 1].x, point[point.length - 1].y);
+    }
+
+    function drawLin(x1, y1, x2, y2) {
+        ctx.beginPath();
+        //设置线条颜色为蓝色
+        ctx.strokeStyle = "gray";
+        ctx.lineWidth = 0.5;
+        //设置路径起点坐标
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        //按照绘制路径顺序连接各个坐标点
+        ctx.stroke();
+    }
+
     //绘制线段
     function drawLine(pointList) {
         // ctx.clearRect(0, 0, 500, 500);
-        if (pointList == null){
+        if (pointList == null) {
             return;
-        };
+        }
+        ;
         for (var i = 0; i < pointList.length; i++) {
             //开始一个新的绘制路径
             ctx.beginPath();
@@ -475,6 +533,54 @@
             //按照绘制路径顺序连接各个坐标点
             ctx.stroke();
         }
+    }
+
+    //绘制辅助线
+    function drawHorizontalLine(y) {
+        ctx.beginPath();
+        ctx.strokeStyle = "red";
+        ctx.moveTo(0, y + 0.5);
+        ctx.lineTo(ctx.canvas.width, y + 0.5);
+        ctx.stroke();
+    }
+
+    function drawVerticalLine(x) {
+        ctx.beginPath();
+        ctx.moveTo(x + 0.5, 0);
+        ctx.lineTo(x + 0.5, ctx.canvas.height);
+        ctx.stroke();
+    }
+
+    function drawGuidewires(x, y) {
+        ctx.save();
+        ctx.strokeStyle = 'rgb(212,16,94)';
+        ctx.lineWidth = 0.5;
+        drawVerticalLine(x);
+        drawHorizontalLine(y);
+        ctx.restore();
+    }
+
+    function drawHorizontalLine(y) {
+        ctx.beginPath();
+        ctx.moveTo(0, y + 0.5);
+        ctx.lineTo(ctx.canvas.width, y + 0.5);
+        ctx.stroke();
+    }
+
+    function drawVerticalLine(x) {
+        ctx.beginPath();
+        ctx.moveTo(x + 0.5, 0);
+        ctx.lineTo(x + 0.5, ctx.canvas.height);
+        ctx.stroke();
+    }
+
+    function drawGuidewires(x, y) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0,0,230,0.4)';
+        ctx.lineWidth = 0.5;
+        drawVerticalLine(x);
+        drawHorizontalLine(y);
+        ctx.restore();
     }
 </script>
 </body>

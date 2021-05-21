@@ -18,4 +18,6 @@ public class CurvePaintingPageOutPut {
     private ArrayList<Point2D> pointList;
 
     private ArrayList<Point2D> controlPointList;
+
+    private String paintingType;
 }

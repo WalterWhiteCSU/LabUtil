@@ -37,6 +37,7 @@ public class controller {
         try {
             CurvePaintingPageInPut curvePaintingPageInPut = mapper.readValue(pageInPut, CurvePaintingPageInPut.class);
             CurvePaintingPageOutPut result = Paint2DService.GetCurve(curvePaintingPageInPut);
+            result.setPaintingType(curvePaintingPageInPut.getPaintingType());
             resultList = mapper.writeValueAsString(result);
 //            if (result != null && result.size() != 0) {
 //                WriteCSVUtil.Write2DPointListToCSV(result, "C:\\Users\\WalterWhite\\Desktop\\");
