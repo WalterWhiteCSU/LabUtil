@@ -93,6 +93,7 @@
 
         <span id="importFile">
             <button>导出数据</button>
+            <input type="file"/>
         </span>
 
     </div>
@@ -211,6 +212,22 @@
             finalPointList = null;
         }
     });
+
+
+/*    can.onmousedown = function(args){
+        var evt = args || event;
+        var offsetX = evt.clientX - can.offsetLeft;//鼠标按下的瞬间相对于myCanvas元素的位置（x）
+        var offsetY = evt.clientY - can.offsetTop;
+        document.onmousemove = function(ev){
+            var iEvent = ev ||event;
+            can.style.left = iEvent.clientX - offsetX + 'px';
+            can.style.top = iEvent.clientY - offsetY + 'px';
+        }
+    }
+    document.onmouseup = function(){
+        document.onmousedown = null;
+        document.onmousemove = null;
+    };*/
 
     // //获取贝塞尔按钮
     // $("#bezier").click(function () {
