@@ -11,6 +11,10 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
         body {
             width: 100%;
             height: 100%;
@@ -26,7 +30,7 @@
         }
 
         #box {
-            left: 300px;
+            left: 0px;
             position: absolute;
         }
 
@@ -35,7 +39,7 @@
             cursor: crosshair;
             position: relative;
             margin-left: 250px;
-            margin-top: 150px;
+            margin-top: 0px;
             -webkit-box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
             -moz-box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
             box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
@@ -92,8 +96,7 @@
         </span>
 
         <span id="importFile">
-            <button>导出数据</button>
-            <input type="file"/>
+            <button id="downloadData">下载数据</button>
         </span>
 
     </div>
@@ -213,6 +216,65 @@
         }
     });
 
+
+    const download = (str,data) => {
+        // 增加\t为了不让表格显示科学计数法或者其他格式
+        for(let i = 0 ; i < data.length ; i++ ){
+            for(const key in data[i]){
+                str+=`${data[i][key] + '\t'},`;
+            }
+            str+='\n';
+        }
+        // encodeURIComponent解决中文乱码
+        const uri = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(str);
+        // 通过创建a标签实现
+        const link = document.createElement("a");
+        link.href = uri;
+        // 对下载的文件命名
+        link.download =  "下载数据.csv";
+        link.click();
+    }
+
+    /*//下载数据
+    $("#downloadData").click(function (e){
+        let data = paintingEntity;
+
+        //表头
+        let header = {col1:'x',col2:'y'}
+        //数据处理， 这一部分可以封装为函数
+        data.unshift(header)  // 添加表头
+        // 处理数据为csv的格式
+        let csvString = ""
+        data.map(item => {
+            Object.keys(header).map(key => {
+                let value = item[key]
+                csvString += value+','
+            })
+            csvString += '\r\n'
+        })
+        // 保存为csv文件并添加下载按钮
+        csvString = "data:application/csv," + encodeURIComponent(csvString);
+        let btn = document.createElement('a');
+        btn.setAttribute("href", csvString);
+        btn.setAttribute("download", "data.csv");
+        btn.innerText = '下载'
+        // 定义一个修改元素样式的函数
+        function setStyle(dom, styles={}){
+            Object.keys(styles).map(key => {
+                dom.style[key] = styles[key]
+            })
+            return dom
+        }
+        // 设置按钮的样式
+        btn = setStyle(btn, {
+            'position': 'fixed',
+            'top': '10px',
+            'left': '10px',
+            'zIndex': '9999999999',
+            'backgroundColor': 'yellow' // 注意的是，样式名不能有下划线，要合并在一起改为首字母大写列如：  background-color  =>  backgroundColor
+        })
+        document.body.appendChild(btn)
+    });*/
 
 /*    can.onmousedown = function(args){
         var evt = args || event;
